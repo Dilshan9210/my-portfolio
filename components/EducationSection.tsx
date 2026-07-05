@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useEffect } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 
@@ -33,6 +33,41 @@ export default function EducationSection() {
     }, containerRef);
 
     return () => ctx.revert();
+  }, []);
+
+  // ── Refresh ScrollTrigger after images load ────────────────────────────
+  useEffect(() => {
+    const section = containerRef.current;
+    if (!section) return;
+
+    const images = section.querySelectorAll('img');
+    let loaded = 0;
+    const total = images.length;
+    if (total === 0) return;
+
+    const onLoad = () => {
+      loaded++;
+      if (loaded >= total) ScrollTrigger.refresh();
+    };
+
+    images.forEach((img) => {
+      if (img.complete) loaded++;
+      else {
+        img.addEventListener('load', onLoad);
+        img.addEventListener('error', onLoad);
+      }
+    });
+
+    if (loaded >= total) {
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    }
+
+    return () => {
+      images.forEach((img) => {
+        img.removeEventListener('load', onLoad);
+        img.removeEventListener('error', onLoad);
+      });
+    };
   }, []);
 
   return (

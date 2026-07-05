@@ -18,3 +18,19 @@
     @apply bg-black text-white;
   }
 }
+
+/* ── GSAP pin-spacer protection ─────────────────────────────────────────── */
+/* Pin-spacers MUST be able to expand freely; any overflow clipping on them
+   or their ancestors breaks height calculations for consecutive pins.      */
+.pin-spacer {
+  overflow: visible !important;
+  /* Prevent the spacer from collapsing under any flex/grid parent */
+  flex-shrink: 0 !important;
+}
+
+/* Prevent horizontal scroll caused by pinned elements going to position:fixed,
+   but use `clip` NOT `hidden` — `hidden` creates a scroll container that
+   breaks GSAP's native scroll-based trigger calculations.                  */
+main {
+  overflow-x: clip;
+}

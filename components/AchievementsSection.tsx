@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useEffect } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 
@@ -55,6 +55,37 @@ export default function AchievementsSection() {
     }, sectionRef);
 
     return () => ctx.revert();
+  }, []);
+
+  // ── Refresh ScrollTrigger after videos load metadata ─────────────────
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const videos = section.querySelectorAll('video');
+    let ready = 0;
+    const total = videos.length;
+    if (total === 0) return;
+
+    const onReady = () => {
+      ready++;
+      if (ready >= total) ScrollTrigger.refresh();
+    };
+
+    videos.forEach((video) => {
+      if (video.readyState >= 1) ready++;   // HAVE_METADATA
+      else video.addEventListener('loadedmetadata', onReady, { once: true });
+    });
+
+    if (ready >= total) {
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    }
+
+    return () => {
+      videos.forEach((video) => {
+        video.removeEventListener('loadedmetadata', onReady);
+      });
+    };
   }, []);
 
   return (
